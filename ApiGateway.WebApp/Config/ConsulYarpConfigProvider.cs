@@ -117,7 +117,12 @@ public class ConsulYarpConfigProvider : IProxyConfigProvider, IDisposable
                 {
                     destinations[instance.Service.ID] = new DestinationConfig
                     {
-                        Address = $"{instance.Service.Address}:{instance.Service.Port}"
+                        // The scheme is not part of Consul's registration, so the gateway
+                        // supplies it. Downstream services listen on plain HTTP in dev: the
+                        // Development certificate escape in BuildHttpClientConfig accepts any
+                        // certificate, and a future HTTPS migration can decide whether to
+                        // prefix with http or https per environment.
+                        Address = $"http://{instance.Service.Address}:{instance.Service.Port}"
                     };
                 }
 
