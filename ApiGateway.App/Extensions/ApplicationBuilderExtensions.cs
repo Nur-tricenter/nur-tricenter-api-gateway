@@ -9,9 +9,8 @@ namespace ApiGateway.App.Extensions;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Deliberately no Swagger UI and no OpenAPI document, matching the reference architecture
-/// (<c>ms2026-store-api-gateway</c>), which gives the gateway one job — route <c>/api/{servicio}/**</c>
-/// from Consul's health-filtered catalog — and no documentation endpoint.
+/// Deliberately no Swagger UI and no OpenAPI document: the gateway has one job — route
+/// <c>/api/{servicio}/**</c> from Consul's health-filtered catalog — and no documentation endpoint.
 /// </para>
 /// <para>
 /// The reason is not only fidelity. A reverse proxy has no controllers, so an OpenAPI document
