@@ -109,7 +109,7 @@ public class ConsulYarpConfigProviderTests
         Assert.Equal("/api/catalog/{**catch-all}", route.Match.Path);
         Assert.Equal("catalog-cluster", route.ClusterId);
 
-        // /api/catalog/api/v1/alimentos -> /api/v1/alimentos
+        // /api/catalog/api/v1/foods -> /api/v1/foods
         var transformRemovePrefix = Assert.Single(route.Transforms!, transform => transform.ContainsKey("PathRemovePrefix"));
         Assert.Equal("/api/catalog", transformRemovePrefix["PathRemovePrefix"]);
 
@@ -132,8 +132,12 @@ public class ConsulYarpConfigProviderTests
         Assert.NotNull(cluster.Destinations);
 
         Assert.Equal(2, cluster.Destinations.Count);
-        Assert.Equal("10.0.0.1:8080", cluster.Destinations["catalog-1"].Address);
-        Assert.Equal("10.0.0.2:8080", cluster.Destinations["catalog-2"].Address);
+
+        // The gateway supplies the scheme: Consul's registration carries only Address and Port,
+        // so ConsulYarpConfigProvider emits "http://{address}:{port}". Asserting the bare
+        // host:port here is what made this test red — it encoded the pre-scheme behaviour.
+        Assert.Equal("http://10.0.0.1:8080", cluster.Destinations["catalog-1"].Address);
+        Assert.Equal("http://10.0.0.2:8080", cluster.Destinations["catalog-2"].Address);
     }
 
     [Fact]

@@ -109,7 +109,7 @@ public class ConsulYarpConfigProvider : IProxyConfigProvider, IDisposable
 
                 var clusterId = $"{serviceName}-cluster";
                 var routePrefix = $"/api/{serviceName}";
-                // /api/catalog/api/v1/alimentos -> /api/v1/alimentos
+                // /api/catalog/api/v1/foods -> /api/v1/foods
                 var routePrefixPlusCatchAll = $"{routePrefix}/{{**catch-all}}";
 
                 var destinations = new Dictionary<string, DestinationConfig>(StringComparer.OrdinalIgnoreCase);
