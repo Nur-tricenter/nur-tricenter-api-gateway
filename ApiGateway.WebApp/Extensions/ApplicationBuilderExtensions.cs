@@ -1,113 +1,29 @@
-using Consul;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace ApiGateway.WebApp.Extensions;
 
 /// <summary>
-/// Pipeline wiring for the pieces that are not plain middleware: Swagger UI (with a
-/// Consul-driven document dropdown), the health endpoints and the correlation id.
+/// Pipeline wiring for the pieces that are not plain middleware: the health endpoints and
+/// the correlation id.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Deliberately no Swagger UI and no OpenAPI document, matching the reference architecture
+/// (<c>ms2026-store-api-gateway</c>), which gives the gateway one job — route <c>/api/{servicio}/**</c>
+/// from Consul's health-filtered catalog — and no documentation endpoint.
+/// </para>
+/// <para>
+/// The reason is not only fidelity. A reverse proxy has no controllers, so an OpenAPI document
+/// generated from the app's own endpoints is empty. One synthesised from the route table would
+/// describe paths and their upstream hosts but not the operations behind them: accurate about
+/// where traffic goes, useless about what it expects to receive. Each microservice publishes its
+/// own contract, which is where a consumer should look for that. A single empty "Authorize" prompt
+/// on every operation, meanwhile, reads as "this route is protected" when nothing is protected.
+/// </para>
+/// </remarks>
 public static class ApplicationBuilderExtensions
 {
-    /// <summary>How often the Swagger UI document dropdown is rebuilt from Consul.</summary>
-    private static readonly TimeSpan SwaggerRefreshInterval = TimeSpan.FromSeconds(15);
-
-    /// <summary>
-    /// MUST be kept alive for the lifetime of the process. A <see cref="System.Threading.Timer"/>
-    /// with no live reference is garbage-collectable at any moment, and when the finalizer
-    /// runs the timer simply stops firing - the dropdown would silently freeze with whatever
-    /// services happened to be registered at startup. Holding it in a static field keeps a
-    /// root alive for the whole app.
-    /// </summary>
-    private static System.Threading.Timer? _swaggerRefreshTimer;
-
-    /// <summary>
-    /// Swagger UI whose document list mirrors Consul's healthy services.
-    /// Development-only: in production the docs must not be reachable.
-    /// </summary>
-    public static IApplicationBuilder UseSwaggerWithUiWithConsul(this WebApplication app)
-    {
-        app.UseSwagger();
-
-        var consulClient = app.Services.GetRequiredService<IConsulClient>();
-        var logger = app.Services.GetRequiredService<ILoggerFactory>()
-            .CreateLogger("ApiGateway.WebApp.SwaggerRefresh");
-
-        var uiOptions = new SwaggerUIOptions();
-        uiOptions.SwaggerEndpoint("/swagger/v1/swagger.json", "API Gateway");
-
-        // Reading Consul once at startup is not enough: compose-style startup (or simply
-        // starting services in the wrong order) brings the gateway up before the backends
-        // register. The reference implementation only snapshotted the catalog here, so
-        // anything that registered later never appeared in the dropdown for the lifetime of
-        // the process. Swashbuckle re-serializes ConfigObject on every request to
-        // /swagger/index.js, so mutating Urls in place is enough - no restart needed.
-        // `async void` because Timer only accepts an Action<object?> and there is no way to
-        // await it; the try/catch below is what keeps a Consul outage from becoming an
-        // unhandled-exception process crash.
-        async void RefreshSwaggerEndpoints(object? state)
-        {
-            try
-            {
-                var serviceNames = await consulClient.Catalog.Services();
-
-                var urls = new List<UrlDescriptor>
-                {
-                    new() { Url = "/swagger/v1/swagger.json", Name = "API Gateway" }
-                };
-
-                foreach (var serviceName in serviceNames.Response.Keys)
-                {
-                    if (string.Equals(serviceName, "consul", StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
-
-                    // Same health-filtered lookup as ConsulYarpConfigProvider, for the same
-                    // reason: an instance whose check is failing should not be advertised.
-                    var healthyInstances = await consulClient.Health.Service(
-                        serviceName,
-                        tag: null,
-                        passingOnly: true);
-
-                    if (healthyInstances.Response.Length == 0)
-                    {
-                        continue;
-                    }
-
-                    var firstInstance = healthyInstances.Response[0].Service;
-                    urls.Add(new UrlDescriptor
-                    {
-                        // Addressed directly to the service, not through the gateway: the
-                        // gateway strips its /api/{service} prefix and re-adds /api, which
-                        // does not match each service's own swagger path.
-                        Url = $"{firstInstance.Address}:{firstInstance.Port}/swagger/v1/swagger.json",
-                        Name = $"{serviceName} API"
-                    });
-                }
-
-                uiOptions.ConfigObject.Urls = urls;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Failed to refresh the Swagger document list from Consul.");
-            }
-        }
-
-        _swaggerRefreshTimer = new System.Threading.Timer(
-            RefreshSwaggerEndpoints,
-            null,
-            TimeSpan.Zero,
-            SwaggerRefreshInterval);
-
-        app.UseSwaggerUI(uiOptions);
-
-        return app;
-    }
-
     /// <summary>
     /// Maps <c>/health</c> (machine-readable, Health Checks UI format) and the
     /// <c>/health-ui</c> dashboard on top of it.
@@ -141,8 +57,8 @@ public static class ApplicationBuilderExtensions
             }
 
             // OnStarting, NOT an assignment after `await next()`: by the time the rest of the
-            // pipeline has run, the response has usually already begun (health checks, Swagger
-            // UI and every proxied response stream their body out), and Kestrel throws
+            // pipeline has run, the response has usually already begun (the health check writes
+            // its body, and every proxied response streams its body out), and Kestrel throws
             // "Headers are read-only, response has already started" on any late write.
             // OnStarting runs once, immediately before the first byte is flushed, while the
             // header dictionary is still mutable.

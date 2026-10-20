@@ -1,6 +1,5 @@
 using ApiGateway.WebApp.Config;
 using Consul;
-using Microsoft.OpenApi.Models;
 using Yarp.ReverseProxy.Configuration;
 
 namespace ApiGateway.WebApp;
@@ -24,46 +23,9 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddGatewayDocumentation();
         services.AddConsulServiceDiscovery(configuration);
         services.AddReverseProxyWithConsul();
         services.AddGatewayHealthChecks(configuration);
-
-        return services;
-    }
-
-    private static IServiceCollection AddGatewayDocumentation(this IServiceCollection services)
-    {
-        services.AddControllers();
-        services.AddEndpointsApiExplorer();
-
-        services.AddSwaggerGen(options =>
-        {
-            // The gateway does NOT validate JWTs yet - authentication was deferred. The
-            // Bearer definition stays on purpose: it documents the contract the platform
-            // WILL honour once auth is added, so consumers do not have to be re-taught
-            // later and the "Authorize" button already shows up in the Swagger UI.
-            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                Name = "Authorization",
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
-                BearerFormat = "JWT",
-                In = ParameterLocation.Header,
-                Description = "JWT obtained from the Identity service. Send the raw token, no 'Bearer ' prefix."
-            });
-
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
-                    },
-                    Array.Empty<string>()
-                }
-            });
-        });
 
         return services;
     }

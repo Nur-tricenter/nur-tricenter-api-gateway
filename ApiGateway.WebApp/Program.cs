@@ -9,26 +9,28 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 //
-// Note what is NOT here: there is no UseAuthentication / UseAuthorization. JWT validation
-// was explicitly deferred, and registering an authorization middleware with no scheme
-// behind it only produces misleading 401s. Swagger still documents the Bearer contract
-// (see DependencyInjection.AddGatewayDocumentation) so the future shape is explicit.
+// A gateway is a reverse proxy, not an application. Two things that a web API
+// project would normally have are deliberately absent:
+//
+//   - No authentication. There is no AddAuthentication, no UseAuthentication and
+//     no UseAuthorization, so every proxied route is open. Phase 5b adds the
+//     middleware, not just the registration: a scheme with nothing behind it
+//     answers 401 to requests that are in fact allowed, which is worse than no
+//     scheme at all.
+//
+//   - No Swagger UI, and no OpenAPI document. The guide gives the gateway one
+//     job (route /api/{service}/** from Consul's health-filtered catalog) and
+//     no documentation endpoint. A proxy has no controllers, so an OpenAPI
+//     document generated from the app's own endpoints is empty, and one
+//     synthesised from the route table would be a description of paths rather
+//     than of operations: accurate about where traffic goes, useless about what
+//     it expects to receive. Each service documents its own contract, which is
+//     where a consumer should look for that.
 app.UseRouting();
-
-if (app.Environment.IsDevelopment())
-{
-    // Swagger UI dropdown is fed from Consul, so it is only meaningful in Development.
-    // It is mounted before UseCorrelationId on purpose (this is the registration order we
-    // settled on), which means the Swagger UI's own static assets - /swagger/index.js and
-    // friends - are answered before the correlation-id middleware and therefore carry no
-    // X-Correlation-Id. Everything the gateway actually proxies does.
-    app.UseSwaggerWithUiWithConsul();
-}
 
 app.UseHealthChecks();
 app.UseCorrelationId();
 
-app.MapControllers();
 app.MapReverseProxy();
 
 app.Run();

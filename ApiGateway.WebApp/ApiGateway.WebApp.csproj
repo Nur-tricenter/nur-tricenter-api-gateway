@@ -24,13 +24,6 @@
     <PackageReference Include="Consul" Version="1.7.14.7" />
     <!-- Reverse proxy runtime + configuration abstractions (IProxyConfigProvider). -->
     <PackageReference Include="Yarp.ReverseProxy" Version="2.3.0" />
-    <!--
-      Pinned to 7.2.0 on purpose, NOT 8.1.2 as the MS2026 reference uses: the rest of our
-      ecosystem (Catalog.WebApi) already builds on 7.2.0 under net10.0, and keeping one
-      Swashbuckle version across the platform avoids two different OpenApi major versions
-      in the same solution. See README.md "Divergences from the reference".
-    -->
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
     <!-- Health endpoint plumbing + the Health Checks UI dashboard at /health-ui. -->
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="9.0.0" />
     <PackageReference Include="AspNetCore.HealthChecks.UI" Version="9.0.0" />
