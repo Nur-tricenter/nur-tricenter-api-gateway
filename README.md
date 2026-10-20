@@ -13,7 +13,7 @@ from Consul at runtime.
 ## How it works
 
 ```
-GET /api/catalog/api/v1/alimentos
+GET /api/catalog/v1/foods
         │
         ▼
    ConsulYarpConfigProvider  ──every 30s──▶  Consul catalog + health
@@ -23,7 +23,7 @@ GET /api/catalog/api/v1/alimentos
    YARP: PathRemovePrefix /api/catalog  +  PathPrefix /api
         │
         ▼
-   http://10.0.0.1:8080/api/v1/alimentos
+   http://10.0.0.1:8080/api/v1/foods
 ```
 
 Three decisions carry the whole design:
@@ -122,7 +122,9 @@ The reference targets `net8.0`. Our whole ecosystem (`ms2-plans-and-recipes-cata
 
 ### 2. `Swashbuckle.AspNetCore` 7.2.0, not 8.1.2
 
-`Catalog.WebApi` already builds on 7.2.0 under `net10.0`. Pinning one Swashbuckle (and therefore
+`Catalog.App` targets `net8.0`, so the gateway's `net10.0` is a deliberate divergence from the
+reference. It consumes no shared kernel, so nothing here is constrained by it. Pinning one
+Swashbuckle (and therefore
 one `Microsoft.OpenApi` major version) across the platform is worth more than matching the
 reference exactly. Practical consequence: in 7.x `UrlDescriptor` lives in
 `Microsoft.OpenApi.Models`, whereas the reference (8.1.2 / OpenApi 2.0) needs a different
