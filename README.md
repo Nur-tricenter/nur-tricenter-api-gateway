@@ -49,7 +49,7 @@ and the last known-good route table keeps serving.
 
 ```
 ApiGateway.sln
-ApiGateway.WebApp/
+ApiGateway.App/
 ├── Program.cs                             # minimal hosting + middleware order
 ├── DependencyInjection.cs                 # registration order, as a list of decisions
 ├── Config/ConsulYarpConfigProvider.cs     # Consul -> YARP bridge (the core of the gateway)
@@ -58,7 +58,7 @@ ApiGateway.WebApp/
 ├── appsettings.Development.json
 ├── Properties/launchSettings.json
 └── Dockerfile
-ApiGateway.WebApp.Tests/
+ApiGateway.App.Tests/
 └── ConsulYarpConfigProviderTests.cs       # xUnit + Moq
 ```
 
@@ -69,7 +69,7 @@ ApiGateway.WebApp.Tests/
 ```bash
 dotnet build
 dotnet test
-dotnet run --project ApiGateway.WebApp        # http://localhost:8080
+dotnet run --project ApiGateway.App        # http://localhost:8080
 ```
 
 Local endpoints:
@@ -83,7 +83,7 @@ Local endpoints:
 Docker:
 
 ```bash
-docker build -t nur-tricenter-api-gateway -f ApiGateway.WebApp/Dockerfile .
+docker build -t nur-tricenter-api-gateway -f ApiGateway.App/Dockerfile .
 docker run -p 8080:8080 -e ServiceRegistration__ServiceDiscoveryAddress=http://host.docker.internal:8500 nur-tricenter-api-gateway
 ```
 
@@ -187,7 +187,7 @@ Not a divergence from the reference — a NuGet-level fix both projects need.
 advisory **GHSA-w7r3-mgwf-4mqq / CVE-2025-9708** (improper certificate validation) and is only
 patched from 17.0.14. We never touch a Kubernetes API — the package is referenced solely by the
 UI's Kubernetes storage provider, which we do not register — so bumping it clears the advisory
-with no behavioural risk. See the comment in `ApiGateway.WebApp.csproj`.
+with no behavioural risk. See the comment in `ApiGateway.App.csproj`.
 
 ### 8. `UseHttpsRedirection()` was not copied
 

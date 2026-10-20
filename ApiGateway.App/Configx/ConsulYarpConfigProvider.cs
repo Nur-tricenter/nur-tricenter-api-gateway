@@ -7,7 +7,7 @@ using Yarp.ReverseProxy.Configuration;
 using DestinationConfig = Yarp.ReverseProxy.Configuration.DestinationConfig;
 using RouteConfig = Yarp.ReverseProxy.Configuration.RouteConfig;
 
-namespace ApiGateway.WebApp.Config;
+namespace ApiGateway.App.Config;
 
 /// <summary>
 /// Bridges Consul service discovery into YARP: every 30 seconds it asks Consul which

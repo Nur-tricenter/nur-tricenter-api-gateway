@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>ApiGateway.WebApp.Tests</RootNamespace>
+    <RootNamespace>ApiGateway.App.Tests</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ApiGateway.WebApp\ApiGateway.WebApp.csproj" />
+    <ProjectReference Include="..\ApiGateway.App\ApiGateway.App.csproj" />
   </ItemGroup>
 
 </Project>

@@ -6,11 +6,11 @@ WORKDIR /src
 
 # Restore first, as a separate layer: source changes then do not invalidate the
 # (expensive) NuGet restore cache.
-COPY ApiGateway.WebApp/ApiGateway.WebApp.csproj ApiGateway.WebApp/
-RUN dotnet restore ApiGateway.WebApp/ApiGateway.WebApp.csproj
+COPY ApiGateway.App/ApiGateway.App.csproj ApiGateway.App/
+RUN dotnet restore ApiGateway.App/ApiGateway.App.csproj
 
-COPY ApiGateway.WebApp/ ApiGateway.WebApp/
-RUN dotnet publish ApiGateway.WebApp/ApiGateway.WebApp.csproj \
+COPY ApiGateway.App/ ApiGateway.App/
+RUN dotnet publish ApiGateway.App/ApiGateway.App.csproj \
     -c Release \
     -o /app/publish \
     --no-restore
@@ -30,4 +30,4 @@ COPY --from=build /app/publish .
 # Never run the gateway as root: it is an internet-facing process.
 USER $APP_UID
 
-ENTRYPOINT ["dotnet", "ApiGateway.WebApp.dll"]
+ENTRYPOINT ["dotnet", "ApiGateway.App.dll"]

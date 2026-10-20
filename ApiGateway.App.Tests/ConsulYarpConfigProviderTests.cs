@@ -1,4 +1,4 @@
-﻿using ApiGateway.WebApp.Config;
+using ApiGateway.App.Config;
 using Consul;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -11,7 +11,7 @@ using Yarp.ReverseProxy.Configuration;
 // pinned explicitly instead of relying on which namespace wins the lookup.
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
-namespace ApiGateway.WebApp.Tests;
+namespace ApiGateway.App.Tests;
 
 /// <summary>
 /// Unit tests for <see cref="ConsulYarpConfigProvider"/>.

@@ -1,7 +1,7 @@
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
-namespace ApiGateway.WebApp.Extensions;
+namespace ApiGateway.App.Extensions;
 
 /// <summary>
 /// Pipeline wiring for the pieces that are not plain middleware: the health endpoints and

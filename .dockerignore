@@ -1,0 +1,27 @@
+# The gateway has no shared-kernel or sibling references, so its build context IS this
+# repository and this file needs no path adjustments. It exists to keep build output and
+# local settings out of the context that travels to the daemon.
+
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/.idea/
+**/.git/
+**/.gitignore
+**/.github/
+
+# Local settings can carry a Consul address that points at a developer's machine.
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/.env
+**/.env.*
+
+**/*.db
+**/*.log
+**/TestResults/
+**/binlog/
+
+**/*Tests/
+README.md
+LICENSE

@@ -1,5 +1,5 @@
-using ApiGateway.WebApp;
-using ApiGateway.WebApp.Extensions;
+using ApiGateway.App;
+using ApiGateway.App.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>ApiGateway.WebApp</RootNamespace>
-    <AssemblyName>ApiGateway.WebApp</AssemblyName>
+    <RootNamespace>ApiGateway.App</RootNamespace>
+    <AssemblyName>ApiGateway.App</AssemblyName>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UserSecretsId>nur-tricenter-api-gateway-local-overrides</UserSecretsId>
@@ -44,7 +44,7 @@
   <ItemGroup>
     <!-- Lets the test project call the internal RefreshAsync() entry point so a refresh can
          be driven deterministically instead of racing the 30 second timer. -->
-    <InternalsVisibleTo Include="ApiGateway.WebApp.Tests" />
+    <InternalsVisibleTo Include="ApiGateway.App.Tests" />
   </ItemGroup>
 
 </Project>

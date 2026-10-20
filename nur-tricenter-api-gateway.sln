@@ -2,9 +2,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiGateway.WebApp", "ApiGateway.WebApp\ApiGateway.WebApp.csproj", "{17E489CC-B942-4196-B879-B8AC74DB1C49}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiGateway.App", "ApiGateway.App\ApiGateway.App.csproj", "{17E489CC-B942-4196-B879-B8AC74DB1C49}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiGateway.WebApp.Tests", "ApiGateway.WebApp.Tests\ApiGateway.WebApp.Tests.csproj", "{FE2F2F5E-8EDF-4DBB-AF2D-9791BF9E3869}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiGateway.App.Tests", "ApiGateway.App.Tests\ApiGateway.App.Tests.csproj", "{FE2F2F5E-8EDF-4DBB-AF2D-9791BF9E3869}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

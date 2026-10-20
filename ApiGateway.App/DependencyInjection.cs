@@ -1,8 +1,8 @@
-using ApiGateway.WebApp.Config;
+using ApiGateway.App.Config;
 using Consul;
 using Yarp.ReverseProxy.Configuration;
 
-namespace ApiGateway.WebApp;
+namespace ApiGateway.App;
 
 /// <summary>
 /// Composition root helpers. Kept out of <c>Program.cs</c> so the registration order reads
