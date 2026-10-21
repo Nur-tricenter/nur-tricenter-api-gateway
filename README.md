@@ -1,12 +1,9 @@
 # API Gateway
 
-YARP reverse proxy + Consul service discovery, modelled on
-[`nur-university/ms2026-store-api-gateway`](https://github.com/nur-university/ms2026-store-api-gateway)
-and adapted to our ecosystem.
-
-The gateway is the **only** public entry point of the platform. Nothing talks to a microservice
-directly; every call goes through `/api/{service-name}/...` and the gateway resolves the target
-from Consul at runtime.
+YARP reverse proxy + Consul service discovery, the only public entry
+point of the platform. Nothing talks to a microservice directly; every
+call goes through `/api/{service-name}/...` and the gateway resolves the
+target from Consul at runtime.
 
 ---
 
