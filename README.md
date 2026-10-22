@@ -107,51 +107,47 @@ Two things are deliberately kept so the deferred work is a drop-in later:
 
 ---
 
-## Divergences from the MS2026 reference
+## Design decisions
 
-Everything below is a conscious deviation, not an accident.
+Everything below is a deliberate choice, not an accident.
 
-### 1. Target framework: `net10.0`, not `net8.0`
+### 1. Target framework: `net10.0`
 
-The reference targets `net8.0`. Our whole ecosystem (`ms2-plans-and-recipes-catalog`) is on
-`net10.0` and we are staying there deliberately. Nothing in this gateway depends on an
-`net8`-only API, so the bump is mechanical.
+The other platform repositories target `net8.0`. This gateway is on `net10.0` and stays there
+deliberately: it consumes no shared kernel, so nothing here is constrained by the `net8` contract.
+Pinning one `Microsoft.OpenApi` major version per repository matters more than a uniform
+framework across services that share no assemblies.
 
-### 2. `Swashbuckle.AspNetCore` 7.2.0, not 8.1.2
+### 2. `Swashbuckle.AspNetCore` 7.2.0
 
-`Catalog.App` targets `net8.0`, so the gateway's `net10.0` is a deliberate divergence from the
-reference. It consumes no shared kernel, so nothing here is constrained by it. Pinning one
-Swashbuckle (and therefore
-one `Microsoft.OpenApi` major version) across the platform is worth more than matching the
-reference exactly. Practical consequence: in 7.x `UrlDescriptor` lives in
-`Microsoft.OpenApi.Models`, whereas the reference (8.1.2 / OpenApi 2.0) needs a different
-namespace.
+Practical consequence: in 7.x `UrlDescriptor` lives in `Microsoft.OpenApi.Models`, whereas
+8.x/OpenApi 2.0 uses a different namespace.
 
 ### 3. No `Serilog` / `AddObservability` / `AddSecrets`
 
 | Excluded | Why |
 |---|---|
-| `Nur.Store2026.Security` | JWT deferred by decision. |
-| `Nur.Store2026.Access` | Only meaningful together with Security. |
+| `Nur.Tricenter.Security` | JWT deferred by decision. |
+| `Nur.Tricenter.Access` | Only meaningful together with Security. |
 | `Joseco.Secrets.HashicorpVault` | No secret material is consumed by the gateway yet; it only forwards requests. |
-| `Nur.Store2026.Observability` | Logging/Seq/Jaeger is **our Fase 6**. The reference's `UseLogging(serviceName, ...)` call is dropped; the gateway uses the standard `Logging` configuration section until then. |
+| `Nur.Tricenter.Observability` | Structured logging with trace correlation arrives with the logging pipeline; until then the gateway uses the standard `Logging` configuration section. |
 | `Microsoft.VisualStudio.Azure.Containers.Tools.Targets` | We ship an explicit `Dockerfile`, so the extra tooling would only add a second source of truth for the container image. |
 
 ### 4. Guarded Consul address instead of `new Uri(value!)`
 
-The reference writes:
+Writing this:
 
 ```csharp
 cfg.Address = new Uri(serviceDiscoveryAddress!);
 ```
 
-With a missing key that surfaces as a bare `ArgumentNullException` thrown from inside Consul's
-own code — useless when you are staring at `appsettings.json`. We validate the key and throw an
+with a missing key surfaces as a bare `ArgumentNullException` thrown from inside Consul's own
+code — useless when you are staring at `appsettings.json`. We validate the key and throw an
 `InvalidOperationException` that names both the key and the offending value.
 
 ### 5. The Health Checks UI registration landmine was removed
 
-The reference does this **during service registration**:
+Registering the UI's downstream services **during service registration** looks like this:
 
 ```csharp
 services.AddHealthChecksUI(setup => {
@@ -181,18 +177,17 @@ project can drive a refresh deterministically instead of racing the timer.
 
 ### 7. `KubernetesClient` pinned to 17.0.14
 
-Not a divergence from the reference — a NuGet-level fix both projects need.
-`AspNetCore.HealthChecks.UI` 9.0.0 depends on `KubernetesClient` 15.0.1, which carries
-advisory **GHSA-w7r3-mgwf-4mqq / CVE-2025-9708** (improper certificate validation) and is only
-patched from 17.0.14. We never touch a Kubernetes API — the package is referenced solely by the
-UI's Kubernetes storage provider, which we do not register — so bumping it clears the advisory
-with no behavioural risk. See the comment in `ApiGateway.App.csproj`.
+A NuGet-level fix. `AspNetCore.HealthChecks.UI` 9.0.0 depends on `KubernetesClient` 15.0.1, which
+carries advisory **GHSA-w7r3-mgwf-4mqq / CVE-2025-9708** (improper certificate validation) and
+is only patched from 17.0.14. We never touch a Kubernetes API — the package is referenced solely
+by the UI's Kubernetes storage provider, which we do not register — so bumping it clears the
+advisory with no behavioural risk. See the comment in `ApiGateway.App.csproj`.
 
-### 8. `UseHttpsRedirection()` was not copied
+### 8. No `UseHttpsRedirection()`
 
-The reference redirects to HTTPS. In front of a container that only speaks plain HTTP on
-`:8080` this turns healthy requests into 307s. TLS termination belongs at the ingress/load
-balancer, not duplicated in every application.
+In front of a container that only speaks plain HTTP on `:8080`, redirecting to HTTPS turns
+healthy requests into 307s. TLS termination belongs at the ingress/load balancer, not
+duplicated in every application.
 
 ---
 

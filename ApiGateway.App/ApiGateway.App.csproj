@@ -11,8 +11,8 @@
     <!--
       NU1510: "Microsoft.Extensions.Diagnostics.HealthChecks is redundant". True - it ships
       inside the Microsoft.AspNetCore.App shared framework, so the explicit reference never
-      contributes an assembly at runtime. It is kept anyway so the dependency list matches the
-      MS2026 reference package-by-package and stays easy to diff against it. The warning is
+      contributes an assembly at runtime. It is kept anyway so the dependency list stays
+      explicit and readable next to the HealthChecks UI packages it belongs with. The warning is
       silenced here (and ONLY here) so `dotnet build` stays a clean signal.
     -->
     <NoWarn>$(NoWarn);NU1510</NoWarn>
