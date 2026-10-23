@@ -145,26 +145,13 @@ public class ConsulYarpConfigProvider : IProxyConfigProvider, IDisposable
                     RouteId = $"{serviceName}-route",
                     ClusterId = clusterId,
                     Match = new RouteMatch { Path = routePrefixPlusCatchAll },
-                    // PathRemovePrefix ALONE.
-                    //
-                    // There used to be a second transform, PathPrefix: "/api", added on top.
-                    // It made every service unroutable. The catalog's controllers are
-                    // [Route("api/v1/foods")], so a request for
-                    //
-                    //     /api/catalog/api/v1/foods
-                    //
-                    // lost `/api/catalog` to PathRemovePrefix and then gained `/api` back from
-                    // PathPrefix, arriving upstream as `/api/api/v1/foods` — which nothing serves.
-                    // Verified against both services: every route through the gateway answered 404
-                    // while the containers themselves were healthy.
-                    //
-                    // The prefix only made sense for a caller-facing shape like
-                    // `/api/catalog/foods`, where the upstream path has no `/api` of its own. No
-                    // service on this platform is shaped that way, so the transform was a
-                    // platform-wide 404 that looked like a dead route table.
+                    // PathRemovePrefix strips /api/{service}; PathPrefix then re-adds /api so the
+                    // upstream path keeps the /api prefix the controllers expect (/api/v1/...).
+                    // Without PathPrefix the request lands on /v1/... upstream and 404s.
                     Transforms =
                     [
-                        new Dictionary<string, string> { { "PathRemovePrefix", routePrefix } }
+                        new Dictionary<string, string> { { "PathRemovePrefix", routePrefix } },
+                        new Dictionary<string, string> { { "PathPrefix", "/api" } }
                     ]
                 };
             }
