@@ -214,3 +214,51 @@ covers:
 The provider refreshes on a timer with `TimeSpan.Zero` due time, so most tests call the internal
 `RefreshAsync()` explicitly to stay deterministic; the one test that asserts the timer behaviour
 uses bounded polling, not a fixed sleep.
+
+## Integration & extending the platform
+
+The gateway is the **single public entry point**. Every other service is reached through
+`/api/{service-name}/...` and is resolved from Consul at runtime. No service is hardcoded.
+
+### How it works
+
+1. `Catalog.Services()` lists service names only (no health info).
+2. `Health.Service(name, tag: null, passingOnly: true)` filters out instances whose checks are failing — a
+   crashed-but-still-registered instance stops receiving traffic automatically.
+3. A service with zero healthy instances gets **no route at all** (YARP answers 404 instead of proxying
+   into a black hole).
+4. Config is an immutable snapshot + change token; YARP reads it from many request threads concurrently.
+   After swapping the new snapshot, the **old** token is cancelled — that cancel is the signal YARP waits
+   on. Cancelling only the new one leaves the gateway frozen on startup state.
+5. Refresh runs every 30s (`TimeSpan.Zero` due time). A Consul outage never fails the request path: the
+   refresh is fully guarded, the error is logged, and the last known-good route table keeps serving.
+
+### What a new microservice needs to be reachable
+
+1. Self-register in Consul with `ServiceRegistration:ServiceName = <name>-service` and a pinned host/port.
+2. Expose a health endpoint / TCP probe so Consul marks it passing.
+3. Use the `/api/v1/...` prefix internally (the gateway applies `PathPrefix: /api` when forwarding).
+4. Add nothing here: the gateway discovers the new service automatically from Consul. No static address
+   list, no restart required (up to 30s for the routing table to refresh).
+
+### Configuration (minimal)
+
+| Key | Default | Meaning |
+|---|---|---|
+| `ServiceRegistration:ServiceDiscoveryAddress` | `http://localhost:8500` | Consul agent/base URL. **Required** — missing/malformed fails startup with `InvalidOperationException` naming the key. |
+| `HealthChecksUI:SelfHealthEndpoint` | `http://localhost:8080/health` | Gateway's own endpoint on the `/health-ui` dashboard. |
+
+### Deferred by decision (not forgotten)
+
+- Authentication / authorization: no `JwtOptions`, no `UseAuthentication`, no `UseAuthorization`, no access
+  filter. The Bearer security definition is kept in Swagger so consumers see the future contract.
+- `Nur.Tricenter.Security` / `Access` / `Observability` / Vault secrets: not consumed yet; the gateway
+  only forwards requests. They arrive with the logging/auth pipeline.
+- TLS termination belongs at the ingress/load balancer, not duplicated in the app (`No UseHttpsRedirection`).
+
+### Notes for operators
+
+- Target framework is `net10.0` (deliberate: consumes no shared kernel, so not constrained by net8).
+- `Swashbuckle.AspNetCore` 7.2.0; `KubernetesClient` pinned to 17.0.14 (CVE-2025-9708).
+- Health checks UI registration uses a fixed local endpoint list — never `BuildServiceProvider()` inside
+  DI (that builds a second, undisposed container and blocks on async Consul calls during startup).
