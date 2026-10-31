@@ -1,4 +1,5 @@
 using ApiGateway.App.Config;
+using ApiGateway.App.Extensions;
 using Consul;
 using Yarp.ReverseProxy.Configuration;
 
@@ -26,6 +27,7 @@ public static class DependencyInjection
         services.AddConsulServiceDiscovery(configuration);
         services.AddReverseProxyWithConsul();
         services.AddGatewayHealthChecks(configuration);
+        services.AddGatewayCors(configuration);
 
         return services;
     }

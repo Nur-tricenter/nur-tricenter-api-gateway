@@ -92,6 +92,14 @@ docker run -p 8080:8080 -e ServiceRegistration__ServiceDiscoveryAddress=http://h
 |---|---|---|---|
 | `ServiceRegistration:ServiceDiscoveryAddress` | `appsettings.Development.json` | `http://localhost:8500` | Consul agent/base URL. **Required** — a missing or malformed value fails startup with an `InvalidOperationException` that names the key. |
 | `HealthChecksUI:SelfHealthEndpoint` | `appsettings.Development.json` | `http://localhost:8080/health` | The gateway's own endpoint, shown on the `/health-ui` dashboard. |
+| `Cors:AllowedOrigins` | `appsettings.json` (empty) / `appsettings.Development.json` | `[]` / `["http://localhost:15100"]` | Browser origins allowed to call the gateway. Empty = CORS off (production). Any method and header, no credentials, `X-Correlation-Id` exposed. Override with `Cors__AllowedOrigins__0=...`. |
+
+### CORS
+
+Off by default. When `Cors:AllowedOrigins` lists an origin, `UseGatewayCors()` (`Extensions/CorsExtensions.cs`)
+runs right after `UseRouting()` and before `MapReverseProxy()`: the gateway answers the preflight
+itself and every proxied response carries the CORS headers, so no service needs its own policy.
+Development allows the local demo console (`http://localhost:15100`).
 
 ### No `JwtOptions` — on purpose
 
