@@ -17,6 +17,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Moq" Version="4.20.72" />
+    <!-- In-memory server for the CORS pipeline tests (no socket, no Consul). -->
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="10.0.1" />
     <PackageReference Include="coverlet.collector" Version="10.0.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

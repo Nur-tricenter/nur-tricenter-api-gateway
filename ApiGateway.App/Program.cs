@@ -28,6 +28,10 @@ var app = builder.Build();
 //     where a consumer should look for that.
 app.UseRouting();
 
+// Before the proxy so a browser preflight is answered here and every proxied response carries the
+// CORS headers. A no-op unless Cors:AllowedOrigins lists an origin (empty in appsettings.json).
+app.UseGatewayCors();
+
 app.UseHealthChecks();
 app.UseCorrelationId();
 
